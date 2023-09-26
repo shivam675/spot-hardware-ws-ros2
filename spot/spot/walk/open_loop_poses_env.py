@@ -8,7 +8,19 @@ import numpy as np
 
 class Poses:
     def __init__(self,):
+        self.manual_control = True
         self.kinematics = Kinematics()
+        self.target_value = np.inf
+
+
+        self.values = {
+            'base_x': (-0.02, 0.02, 0.01), 
+            'base_y': (-0.007, 0.007, 0), 
+            'base_z': (-0.048, 0.021, 0), 
+            'roll': (-0.7853981633974483, 0.7853981633974483, 0), 
+            'pitch': (-0.7853981633974483, 0.7853981633974483, 0), 
+            'yaw': (-0.7853981633974483, 0.7853981633974483, 0)
+            }
     
     @staticmethod
     def _evaluate_stage_coefficient(current_t, action, end_t=0.0):
@@ -20,7 +32,7 @@ class Poses:
             return 1.0
 
 
-    def _signal(self, t, action):
+    def _signal(self, t, action, position: np.array, orientation: np.array):
         if not self.manual_control:
             stage_coeff = self._evaluate_stage_coefficient(t, action)
             staged_value = self.target_value * stage_coeff
@@ -38,7 +50,13 @@ class Poses:
                 self.values["yaw"][2]
             ])
         else:
-            self.position, self.orientation = self._read_inputs()
+            
+            # self.position, self.orientation = np.array(
+            #     [0, 0, 0]
+            # ), np.array(
+            #     [0, 0, 0]
+            # )
+            self.position, self.orientation = position, orientation
         
         fr_angles, fl_angles, rr_angles, rl_angles, _ = self.kinematics.solve(self.orientation, self.position)
         signal = [

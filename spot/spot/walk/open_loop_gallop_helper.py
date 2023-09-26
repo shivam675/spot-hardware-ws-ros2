@@ -14,7 +14,7 @@ class IKGalloping:
         self._base_roll = 0
         self._base_pitch = 0
         self._base_yaw = 0
-        self.step_length = 1.5
+        self.step_length = 0.8
         self.step_rotation = 0
         self.step_angle = 0
         self.step_period = 1

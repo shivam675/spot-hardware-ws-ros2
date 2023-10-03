@@ -116,8 +116,7 @@ if __name__ == '__main__':
     temp_actions = np.zeros(8)
 
     period = 1/8
-    fa = 0.8
-    # fa = 1
+    fa = 0.8    # fa = 1
     la = 0.05
     
     print("Walker Initiated")
@@ -128,5 +127,5 @@ if __name__ == '__main__':
         walker.start_walking(actions)
         mid_time = time.time()
         current_time +=  - start_time + mid_time
-        time.sleep(0.05)
+        time.sleep(0.03)
 

@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-
-from spot.walk.open_loop_gallop_helper import IKGalloping
-import numpy as np
-from scipy.interpolate import interp1d
-import math
-import time
+from time import sleep
 from adafruit_servokit import ServoKit
+import random
+from itertools import cycle
+import math
+from scipy.interpolate import interp1d
+
+kit = ServoKit(channels=16)
 
 
-class StartWalking:
-    def __init__(self,):
+
+class SPOT_ME:
+    def __init__(self) -> None:
         self.legs = ["sim_leg_fl", "sim_leg_fr", "sim_leg_rl", "sim_leg_rr",]
 
         self.sim_max_angle = math.pi/2
@@ -50,7 +52,7 @@ class StartWalking:
 
         }
 
-        base_walk_stance = [ 
+        self.base_walk_stance = [ 
                 
                 0.20553583, -0.92080635,  1.52989233, 
                 -0.20553583, -0.92080635,  1.52989553, 
@@ -70,23 +72,51 @@ class StartWalking:
 
         ]
 
-        base_stance_sholder_value = 1.52989233
-
 
         self.shoulder_inter = interp1d([0, 3.142], [0, 180])
-        self.elbow_inter = interp1d([-2, 2], [0, 180])
+        self.elbow_inter = interp1d([-math.pi/2, math.pi/2], [0, 180])
         self.left_wrist_inter = interp1d([-0.2, math.pi], [0, 180])
 
-    
-    
-    
-    def start_walking(self, motor_values: np.array):
-        # motor_values = motor_values.tolist()
 
 
-        # final_angles = []
-        for idx, val in enumerate(motor_values):
-            try:
+    def rectify_angle(self, idx, value):
+
+        true_angle = self.map_angles(value)
+        
+        return math.degrees(true_angle)
+
+
+
+
+
+    def set_spot_pose(self, pose: list) -> list:
+        """
+        Take Pose list via sim or rl model and set them to
+        real spot
+        """
+
+        poses = {
+            
+            "sim_leg_fl" : pose[0:3],
+            "sim_leg_fr" : pose[3:6],
+            "sim_leg_rl" : pose[6:9],
+            "sim_leg_rr" : pose[9:12],
+        }
+
+        for leg in self.legs:
+            for index, motor_value in enumerate(poses[leg]):
+                pin_value = self.irl_spot[leg][index]
+
+                print(pin_value, int(self.rectify_angle(pin_value, motor_value)))
+                # kit.servo[pin_value] = int(self.rectify_angle(pin_value, motor_value))
+                
+
+
+
+    def start(self, motor_values):
+        
+            final_angles = []
+            for idx, val in enumerate(motor_values):
                 if idx in [2,8]:
                     # flw, rlw
                     # print(self.left_wrist_inter(val))
@@ -105,35 +135,36 @@ class StartWalking:
                     self.kit.servo[self.irl_spot[self.sim_spot[idx]]].angle = 90 - int(self.elbow_inter(val))
                 
                 elif idx in [0, 3, 6, 9]:
-                    # final_angles.append(90)
-                    pass
-            except:
-                print("passed")
-                print( 90 + int(self.elbow_inter(val)))
-                pass
+                    final_angles.append(90)
 
 
-
-if __name__ == '__main__':
     
-    walker = StartWalking()
-    gallop_helper = IKGalloping()
-    current_time = 0
-    temp_actions = np.zeros(8)
+def main():
 
-    # period = 1/8
-    # fa = 0.6
-    # # fa = 1
-    # la = 0.05
+    start_pose = [  0, -1.4,  3, 
+                    0, -1.4,  3,  
+                    0, -1.4,  2.6, 
+                    0, -1.4,  2.6, 
+    ]
     
-    print("Gallop Initiated")
-    while True:
-        # print('')
-        start_time = time.time()
-        actions = gallop_helper._IK_signal(current_time, temp_actions,)
-        walker.start_walking(actions)
-        # print(actions)
-        mid_time = time.time()
-        current_time +=  - start_time + mid_time
-        time.sleep(0.01)
+    spot = SPOT_ME()
+    
+    spot.start(start_pose)
+    
 
+
+
+
+
+
+    # kit.servo[10].angle = int(120)
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()

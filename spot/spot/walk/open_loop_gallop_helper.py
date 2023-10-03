@@ -11,13 +11,13 @@ class IKGalloping:
         self._is_render = False
 
         self._gait_planner = GaitPlanner("gallop")
-        self._base_roll = 0
+        self._base_roll = 0.3
         self._base_pitch = 0
         self._base_yaw = 0
-        self.step_length = 0.8
+        self.step_length = 0.7
         self.step_rotation = 0
         self.step_angle = 0
-        self.step_period = 1
+        self.step_period = 0.5
         self.goal_reached = False
 
 
